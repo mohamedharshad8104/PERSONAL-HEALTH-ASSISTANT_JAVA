@@ -2,109 +2,140 @@
 //"Online Personal Training Assistant" project emerges as a powerful tool bridging the gap between fitness goals and expert guidance
 //JAVA PROGRAM
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
+
+public class OnlinePersonalTrainingAssistant {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            UserInterface ui = new UserInterface();
+            ui.authenticateUser();
+        });
+    }
+}
 
 class User {
     private String name;
-    private double weight;
-    private double height;
     private int age;
+    private double weight;
+    private double height; // Height in centimeters
+    private double bmi;
 
-    public User(String name, double weight, double height) {
+    public User(String name, int age, double weight, double height, double bmi) {
         this.name = name;
+        this.age = age;
         this.weight = weight;
         this.height = height;
-        this.age = 0; // Age is not used for BMI calculation
+        this.bmi = bmi;
     }
 
-    public double calculateBMI() {
-        double heightInMeters = height / 100;
-        return weight / (heightInMeters * heightInMeters);
+    public String getName() {
+        return name;
     }
 
-    public void viewWorkoutPlan() {
+    public String getAge() {
+        return Integer.toString(age);
+    }
+
+    public String getWeight() {
+        return Double.toString(weight);
+    }
+
+    public String getHeight() {
+        return Double.toString(height);
+    }
+
+    public String getBMI() {
+        return String.format("%.2f", bmi);
+    }
+
+    public String getWorkoutAndDiet() {
         String workoutPlan = "Your personalized workout plan:\n" +
-                "Monday: Chest and Triceps\n" +
-                "Tuesday: Back and Biceps\n" +
-                "Wednesday: Rest day\n" +
-                "Thursday: Legs and Shoulders\n" +
-                "Friday: Cardio and Abs\n" +
-                "Saturday: Rest day\n" +
-                "Sunday: Rest day";
-        JOptionPane.showMessageDialog(null, workoutPlan, "Workout Plan", JOptionPane.INFORMATION_MESSAGE);
+            "Monday: Chest and Triceps\n" +
+            "Tuesday: Back and Biceps\n" +
+            "Wednesday: Rest day\n" +
+            "Thursday: Legs and Shoulders\n" +
+            "Friday: Cardio and Abs\n" +
+            "Saturday: Rest day\n" +
+            "Sunday: Rest day";
+
+        String dietChart = "Your personalized diet chart:\n" +
+            "Breakfast: Oatmeal with fruits and a glass of milk\n" +
+            "Mid-Morning Snack: Greek yogurt with honey\n" +
+            "Lunch: Grilled chicken breast with brown rice and vegetables\n" +
+            "Afternoon Snack: Mixed nuts and a banana\n" +
+            "Dinner: Baked salmon with quinoa and steamed broccoli\n" +
+            "Before Bed: A glass of warm milk";
+
+        return workoutPlan + "\n\n" + dietChart;
     }
 
-    public void viewDietChart() {
-        String dietChart = "Your personalized diet chart:\n" +
-                "Breakfast: Oatmeal with fruits and a glass of milk\n" +
-                "Mid-Morning Snack: Greek yogurt with honey\n" +
-                "Lunch: Grilled chicken breast with brown rice and vegetables\n" +
-                "Afternoon Snack: Mixed nuts and a banana\n" +
-                "Dinner: Baked salmon with quinoa and steamed broccoli\n" +
-                "Before Bed: A glass of warm milk";
-        JOptionPane.showMessageDialog(null, dietChart, "Diet Chart", JOptionPane.INFORMATION_MESSAGE);
+    // Add a method to interpret the BMI value
+    public String getBMIInterpretation() {
+        double bmiValue = this.bmi;
+        String interpretation;
+
+        if (bmiValue < 18.5) {
+            interpretation = "You are underweight.";
+        } else if (bmiValue >= 18.5 && bmiValue < 24.9) {
+            interpretation = "You are in the healthy weight range.";
+        } else if (bmiValue >= 25 && bmiValue < 29.9) {
+            interpretation = "You are overweight.";
+        } else {
+            interpretation = "You are obese.";
+        }
+
+        return interpretation;
     }
 }
 
-class OnlinePersonalTrainingAssistant {
-    private JFrame frame;
-    private UserInterface userInterface;
+class UserInterface {
     private User currentUser;
 
-    public OnlinePersonalTrainingAssistant() {
-        frame = new JFrame("Personal Training Assistant");
+    public void authenticateUser() {
+        // Get user input
+        String name = JOptionPane.showInputDialog(null, "Enter your name:");
+        int age = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter your age:"));
+        double weight = Double.parseDouble(JOptionPane.showInputDialog(null, "Enter your weight (in kg):"));
+        double heightCm = Double.parseDouble(JOptionPane.showInputDialog(null, "Enter your height (in cm):")); // Height in cm
+
+        // Convert height to meters
+        double heightM = heightCm / 100.0;
+
+        // Calculate BMI
+        double bmi = weight / (heightM * heightM);
+
+        currentUser = new User(name, age, weight, heightCm, bmi); // Store height in cm
+
+        displayGUI();
+    }
+
+    private void displayGUI() {
+        JFrame frame = new JFrame("Online Personal Training Assistant");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
 
-        userInterface = new UserInterface(this);
-        frame.add(userInterface);
+        JTextArea outputTextArea = new JTextArea();
+        outputTextArea.setEditable(false);
 
-        frame.pack();
+        JScrollPane scrollPane = new JScrollPane(outputTextArea);
+        frame.add(scrollPane);
+
+        String name = currentUser.getName();
+        String age = currentUser.getAge();
+        String weight = currentUser.getWeight();
+        String height = currentUser.getHeight();
+        String bmiMessage = "Hello " + name + ", your BMI is " + currentUser.getBMI();
+
+        // Get BMI interpretation
+        String bmiInterpretation = currentUser.getBMIInterpretation();
+
+        String workoutAndDiet = currentUser.getWorkoutAndDiet();
+
+        outputTextArea.append("Name: " + name + "\nAge: " + age + " years\nWeight: " + weight + " kg\nHeight: " + height + " cm\n");
+        outputTextArea.append(bmiMessage + "\n" + bmiInterpretation + "\n\n" + workoutAndDiet);
+
         frame.setVisible(true);
     }
-
-    public void authenticateUser(String name, double weight, double height) {
-        currentUser = new User(name, weight, height);
-        currentUser.calculateBMI();
-        showMainOptions();
-    }
-
-    public void showMainOptions() {
-        int choice = JOptionPane.showConfirmDialog(null,
-                "Choose an option:\nView Workout Plan\nView Diet Chart\nView BMI\n\nYour BMI: " + String.format("%.2f", currentUser.calculateBMI()),
-                "Main Menu", JOptionPane.YES_NO_OPTION);
-
-        if (choice == JOptionPane.YES_OPTION) {
-            currentUser.viewWorkoutPlan();
-        } else if (choice == JOptionPane.NO_OPTION) {
-            currentUser.viewDietChart();
-        }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new OnlinePersonalTrainingAssistant());
-    }
 }
 
-class UserInterface extends JPanel {
-    private OnlinePersonalTrainingAssistant assistant;
-    private JButton authenticateButton;
-
-    public UserInterface(OnlinePersonalTrainingAssistant assistant) {
-        this.assistant = assistant;
-
-        authenticateButton = new JButton("Authenticate User");
-        authenticateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String name = JOptionPane.showInputDialog("Enter your name:");
-                double weight = Double.parseDouble(JOptionPane.showInputDialog("Enter your weight (kg):"));
-                double height = Double.parseDouble(JOptionPane.showInputDialog("Enter your height (cm):"));
-
-                assistant.authenticateUser(name, weight, height);
-            }
-        });
-
-        add(authenticateButton);
-    }
-}
